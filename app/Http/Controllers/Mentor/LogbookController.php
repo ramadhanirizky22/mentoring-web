@@ -69,11 +69,12 @@ class LogbookController extends Controller
         $start_time = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $start_time);
         $end_time = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $end_time);
 
-        if ($request->has('image')) {
+        $imageName = null;
+        if ($request->filled('image')) {
             $base64Image = $request->input('image');
-            $image = str_replace('data:image/jpeg;base64,', '', $base64Image);
+            $image = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
             $image = str_replace(' ', '+', $image);
-            $imageName = time() . '.jpg';
+            $imageName = time() . '_' . uniqid() . '.jpg';
 
             $uploadPath = public_path('uploads');
 
@@ -103,6 +104,14 @@ class LogbookController extends Controller
     public function deleteReport($id)
     {
         $report = Report::findOrFail($id);
+
+        if ($report->report_photo) {
+            $filePath = public_path('uploads/' . basename($report->report_photo));
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+        }
+
         $report->delete();
 
         return redirect()->route('logbook.show')->with('success', 'Laporan berhasil dihapus.');

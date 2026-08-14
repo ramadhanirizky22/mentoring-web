@@ -7,6 +7,8 @@ use App\Models\Announcement;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Str;
+
 class AnnouncementController extends Controller
 {
     // get announcement
@@ -25,18 +27,19 @@ class AnnouncementController extends Controller
         ]);
 
         $file = $request->file('announcement');
-        $originalFileName = $file->getClientOriginalName();
+        $safeName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $uniqueFileName = time() . '_' . $safeName . '.' . $file->getClientOriginalExtension();
 
         $storagePath = storage_path('app/public/announcements');
         if (!file_exists($storagePath)) {
-            mkdir($storagePath, 0777, true);
+            mkdir($storagePath, 0755, true);
         }
 
-        $file->move($storagePath, $originalFileName);
+        $file->move($storagePath, $uniqueFileName);
 
         Announcement::create([
             'title' => $request->input('title'),
-            'file_path' => $originalFileName,
+            'file_path' => $uniqueFileName,
         ]);
 
         return redirect()->back()->with('success', 'Announcement uploaded successfully!');
@@ -46,7 +49,8 @@ class AnnouncementController extends Controller
     {
         $announcement = Announcement::findOrFail($id);
 
-        $filePath = storage_path('app/public/announcements/' . $announcement->file_path);
+        $safeFileName = basename($announcement->file_path);
+        $filePath = storage_path('app/public/announcements/' . $safeFileName);
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -74,7 +78,8 @@ class AnnouncementController extends Controller
 
     public function download($fileName)
     {
-        $filePath = storage_path('app/public/announcements/' . $fileName);
+        $safeFileName = basename($fileName);
+        $filePath = storage_path('app/public/announcements/' . $safeFileName);
 
         if (file_exists($filePath)) {
             return response()->download($filePath);

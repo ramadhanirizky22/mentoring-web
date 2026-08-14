@@ -15,9 +15,9 @@ class AttendanceUser extends Model
         'status',
     ];
 
-    public function attendanceUsers()
+    public function attendance()
     {
-        return $this->hasMany(AttendanceUser::class, 'attendance_id', 'attendance_id');
+        return $this->belongsTo(Attendance::class, 'attendance_id');
     }
 
     public function user()

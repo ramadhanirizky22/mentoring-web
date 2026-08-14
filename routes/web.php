@@ -35,19 +35,23 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 //Courses
 Route::get('/courses/{slug}', [CourseController::class, 'search'])->name('courses.search');
-Route::post('/courses/{slug}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
 
-//MyCourse
-Route::get('/mycourse', [MyCourseController::class, 'index'])->name('mycourse');
-Route::get('/mycourse/{slug}', [MyCourseController::class, 'showDetail'])->name('courses.show');
-Route::get('/mycourse/participant/{slug}', [MyCourseController::class, 'showParticipant'])->name('participant');
+Route::middleware('auth')->group(function () {
+    Route::post('/courses/{slug}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
 
-//Enroll
-Route::get('/enroll/{slug}', [CourseController::class, 'view'])->name('enroll');;
-Route::post('/enroll/{slug}')->name('enroll.post');
+    //MyCourse
+    Route::get('/mycourse', [MyCourseController::class, 'index'])->name('mycourse');
+    Route::get('/mycourse/{slug}', [MyCourseController::class, 'showDetail'])->name('courses.show');
+    Route::get('/mycourse/participant/{slug}', [MyCourseController::class, 'showParticipant'])->name('participant');
 
-//unEnroll
-Route::post('/unenroll/{slug}', [CourseController::class, 'unenroll'])->name('unenroll');
+    //Enroll & Unenroll
+    Route::get('/enroll/{slug}', [CourseController::class, 'view'])->name('enroll');
+    Route::post('/unenroll/{slug}', [CourseController::class, 'unenroll'])->name('unenroll');
+
+    //Presence
+    Route::get('/presence/{module_id}', [MenteeAttendanceController::class, 'showByModule'])->name('presence');
+    Route::post('/presence/store', [MenteeAttendanceController::class, 'store'])->name('presence.store');
+});
 
 //module
 Route::get('/module/download/{fileName}', [MentorController::class, 'downloadByFileName'])->name('module.downloadByFileName');
@@ -58,19 +62,15 @@ Route::get('/task-submission/{task_id}', [AssignmentController::class, 'getAssig
 Route::post('/task-submission/store/{task_id}', [AssignmentController::class, 'store'])->middleware('auth')->name('taskSubmit.store');
 Route::post('/task-submission/update/{assignment_id}', [AssignmentController::class, 'edit'])->middleware('auth')->name('assignment.update');
 Route::get('/assignment/download/{assigment_id}', [MenteeTaskController::class, 'download'])->middleware('auth')->name('assignment.download');
-Route::get('/task/donwload/{task_id}', [TaskController::class, 'download'])->middleware('auth')->name('task.download');
+Route::get('/task/download/{task_id}', [TaskController::class, 'download'])->middleware('auth')->name('task.download');
 
-
-//Presence
-Route::get('/presence/{module_id}', [MenteeAttendanceController::class, 'showByModule'])->middleware('auth')->name('presence');
-Route::post('/presence/store', [MenteeAttendanceController::class, 'store'])->name('presence.store');
 
 //admin
 Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/dashboard/{id}/download-pdf', [DashboardAdminController::class, 'downloadPdf'])->name('admin.dashboard.download-pdf');
 
-    Route::get('/announcement', [AnnouncementController::class, 'index'])->middleware('auth')->name('admin.announcement');
+    Route::get('/announcement', [AnnouncementController::class, 'index'])->name('admin.announcement');
     Route::delete('/announcement/{id}', [AnnouncementController::class, 'destroy'])->name('announcement.delete');
     Route::post('/announcement/update/{id}', [AnnouncementController::class, 'update'])->name('announcement.update');
 
@@ -102,7 +102,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 });
 
 //mentor
-Route::prefix('mentor')->group(function () {
+Route::prefix('mentor')->middleware('auth')->group(function () {
     Route::get('/mentoring/{slug}', [MentorController::class, 'index'])->name('mentor.mentoring');
     Route::get('/mentoring/participant/{slug}', [MyCourseController::class, 'showParticipant'])->name('mentor.mentoring.participant');
 
@@ -122,12 +122,11 @@ Route::prefix('mentor')->group(function () {
 
     Route::get('/submission/{task_id}', [MentorSubmissionController::class, 'index'])->name('submission.show');
     Route::get('/submission/download/{assignment_id}', [MentorSubmissionController::class, 'download'])->name('submission.download');
-    Route::get('/presence/{attendance_id}', [AttendanceController::class, 'show'])->name('attendance.show');
 });
 
 
 //announcement
-Route::post('/upload-announcement', [AnnouncementController::class, 'upload']);
+Route::post('/upload-announcement', [AnnouncementController::class, 'upload'])->middleware('auth');
 Route::get('/download-announcement/{fileName}', [AnnouncementController::class, 'download'])->name('announcement.download');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');

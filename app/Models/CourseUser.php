@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Foundation\Auth\User;
+use App\Models\User;
 
 class CourseUser extends Pivot
 {

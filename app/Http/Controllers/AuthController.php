@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'nim' => 'required|nim',
+            'nim' => 'required|string',
             'password' => 'required',
         ]);
 

@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Str;
+
 class AssignmentController extends Controller
 {
     public function store(Request $request, $task_id)
@@ -18,11 +20,9 @@ class AssignmentController extends Controller
             'file' => 'required|file|mimes:pdf,doc,docx,zip|max:2048',
         ]);
 
-        $validatedData['assignment_date'] = now();
-
         $user = Auth::user();
+        $validatedData['assignment_date'] = now();
         $validatedData['user_id'] = $user->id;
-
         $validatedData['task_id'] = $task_id;
 
         $folderPath = 'assignments';
@@ -31,12 +31,13 @@ class AssignmentController extends Controller
         }
 
         $file = $request->file('file');
-        $filename = $file->getClientOriginalName();
+        $safeName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $filename = time() . '_' . $safeName . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs($folderPath, $filename, 'public');
 
         $validatedData['file'] = $path;
 
-        $assignment = Assignment::create($validatedData);
+        Assignment::create($validatedData);
 
         return redirect()->route('mentee.task', ['task_id' => $task_id])->with('message', 'Assignment created successfully!');
     }
@@ -49,13 +50,18 @@ class AssignmentController extends Controller
 
         $assignment = Assignment::findOrFail($assignment_id);
 
+        if ($assignment->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access to update this assignment.');
+        }
+
         if (Storage::disk('public')->exists($assignment->file)) {
             Storage::disk('public')->delete($assignment->file);
         }
 
         $file = $request->file('file');
         $folderPath = 'assignments';
-        $filename = $file->getClientOriginalName();
+        $safeName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $filename = time() . '_' . $safeName . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs($folderPath, $filename, 'public');
 
         $assignment->file = $path;

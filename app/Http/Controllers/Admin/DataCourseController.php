@@ -47,6 +47,10 @@ class DataCourseController extends Controller
             return back()->withErrors(['error' => 'Mentor dengan ID tersebut tidak ditemukan atau bukan seorang mentor.']);
         }
 
+        if (!$pembimbing) {
+            return back()->withErrors(['error' => 'Pembimbing dengan ID tersebut tidak ditemukan atau bukan seorang pembimbing.']);
+        }
+
         $course_slug = Str::slug($validated['course_title'], '-');
 
         $course = Course::create([

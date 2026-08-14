@@ -49,9 +49,14 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
         $request->validate([
             'attendance_id' => 'required|exists:attendances,attendance_id',
-            'user_id' => 'required|exists:users,id',
             'status' => 'required|in:hadir,tidak hadir,izin',
         ]);
 
@@ -71,8 +76,6 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'Course not found for this module.');
         }
 
-        $user = Auth::user();
-
         $isEnrolled = CourseUser::where('user_id', $user->id)
             ->where('course_id', $course->course_id)
             ->exists();
@@ -82,29 +85,33 @@ class AttendanceController extends Controller
         }
 
         $now = Carbon::now('Asia/Jakarta');
-        $deadline = Carbon::createFromFormat('Y-m-d H:i:s', $attendance->deadline, 'Asia/Jakarta')->startOfSecond();
-        $attendanceOpen = Carbon::createFromFormat('Y-m-d H:i:s', $attendance->attendance_open, 'Asia/Jakarta')->startOfSecond();
+        $deadline = Carbon::parse($attendance->deadline)->tz('Asia/Jakarta')->startOfSecond();
+        $attendanceOpen = Carbon::parse($attendance->attendance_open)->tz('Asia/Jakarta')->startOfSecond();
 
         if ($now->lt($attendanceOpen)) {
             return redirect()->back()->with('error', 'Attendance is not open yet.');
         }
 
-        if ($now->gt($deadline)) {
-            $attendanceUser = AttendanceUser::create([
-                'attendance_id' => $request->attendance_id,
-                'user_id' => $request->user_id,
-                'status' => 'tidak hadir',
-            ]);
+        $existingAttendance = AttendanceUser::where('attendance_id', $attendance->attendance_id)
+            ->where('user_id', $user->id)
+            ->first();
 
-            return redirect()->back()->with('success', 'Attendance deadline has passed.');
+        if ($existingAttendance) {
+            return redirect()->back()->with('error', 'You have already recorded attendance for this session.');
         }
 
-        $attendanceUser = AttendanceUser::create([
-            'attendance_id' => $request->attendance_id,
-            'user_id' => $request->user_id,
-            'status' => $request->status,
+        $statusToSave = $now->gt($deadline) ? 'tidak hadir' : $request->status;
+
+        AttendanceUser::create([
+            'attendance_id' => $attendance->attendance_id,
+            'user_id' => $user->id,
+            'status' => $statusToSave,
         ]);
 
-        return redirect()->back()->with('success', 'Attendance created successfully.');
+        $message = $now->gt($deadline)
+            ? 'Attendance deadline has passed. Marked as tidak hadir.'
+            : 'Attendance recorded successfully.';
+
+        return redirect()->back()->with('success', $message);
     }
 }
