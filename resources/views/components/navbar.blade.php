@@ -41,6 +41,15 @@
 
             <!-- Right User Menu / Login -->
             <div class="flex items-center space-x-3">
+                <!-- Theme Toggle Button -->
+                <button 
+                    id="theme-toggle" 
+                    type="button" 
+                    title="Beralih Mode Gelap/Terang"
+                    class="p-2 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors focus:outline-none">
+                    <i id="theme-toggle-dark-icon" class="fas fa-moon text-sm hidden"></i>
+                    <i id="theme-toggle-light-icon" class="fas fa-sun text-sm hidden text-amber-400"></i>
+                </button>
                 @if(Auth::check())
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" @click.away="open = false" type="button" class="flex items-center space-x-2.5 p-1.5 rounded-full hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/30">

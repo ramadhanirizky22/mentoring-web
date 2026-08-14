@@ -1,188 +1,213 @@
 @extends('layouts.app')
 
 @section('content')
-@if (session('message'))
-<div class="bg-green-100 text-green-700 p-4 rounded-lg mb-6">
-    {{ session('message') }}
-</div>
-@endif
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-6">
+    
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-violet-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 uppercase">
+                <i class="fas fa-book-reader mr-1"></i> Logbook Kegiatan
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Catatan & Dokumentasi Kegiatan Mentoring</h1>
+            <p class="text-xs text-indigo-200">Isi dan dokumentasikan setiap sesi pelaksanaan kegiatan mentoring kelompok Anda</p>
+        </div>
 
-@if (session('error'))
-<div class="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
-    {{ session('error') }}
-</div>
-@endif
-
-<div class="bg-gray-100 min-h-screen py-8">
-    <div class="container mx-auto">
-        <!-- Header Section -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold">Logbook</h1>
-            <button id="openModal" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-500">
-                Tambah Kegiatan
+        <div class="shrink-0">
+            <button id="openModal" class="px-5 py-3 rounded-2xl bg-white text-indigo-900 hover:bg-indigo-50 font-bold text-xs shadow-lg shadow-black/10 transition-all hover:scale-105 active:scale-95 inline-flex items-center">
+                <i class="fas fa-plus mr-2 text-indigo-600"></i> Tambah Logbook Sesi
             </button>
         </div>
+    </div>
 
-        <!-- Outer Activity Container -->
-        @if ($reports->isEmpty())
-        <div class="bg-white p-6 container mx-auto">
-            <p class="text-gray-500 text-center">No reports available for this course.</p>
-        </div>
-        @endif
-        @foreach ($reports as $report)
-        <div class="bg-white p-6 container mx-auto">
-            <!-- Activity Cards -->
-            <div class="space-y-6">
-                <div class="flex overflow-hidden ">
-                    <!-- Image Section -->
-                    <div class="w-1/2 p-4">
-                        @if ($report->status !== 'approved' && $report->status !== 'rejected')
-                        <form action="{{ route('mentor.report.delete', $report->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded hover:bg-red-600">
-                                Hapus
-                            </button>
-                        </form>
-                        @endif
-                        <img src="{{ $report->report_photo ? asset('uploads/' . $report->report_photo) : '/images/logbook.svg' }}" alt="Activity Image"
-                            class="w-full h-auto object-cover rounded mt-4">
+    <!-- Alert Messages -->
+    @if (session('message'))
+    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-start space-x-3 text-emerald-800 text-xs font-semibold">
+        <i class="fas fa-check-circle text-emerald-500 text-base mt-0.5 shrink-0"></i>
+        <span>{{ session('message') }}</span>
+    </div>
+    @endif
+
+    @if (session('error'))
+    <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200/80 flex items-start space-x-3 text-rose-800 text-xs font-semibold">
+        <i class="fas fa-exclamation-circle text-rose-500 text-base mt-0.5 shrink-0"></i>
+        <span>{{ session('error') }}</span>
+    </div>
+    @endif
+
+    <!-- Activity Logbook Feed -->
+    <div class="space-y-6">
+        @forelse ($reports as $report)
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
+            <div class="flex flex-col lg:flex-row gap-6">
+                
+                <!-- Documentation Photo -->
+                <div class="lg:w-1/3 space-y-3">
+                    <div class="relative h-52 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
+                        <img 
+                            src="{{ $report->report_photo ? asset('uploads/' . $report->report_photo) : '/images/logbook.svg' }}"
+                            alt="Dokumentasi Sesi" 
+                            class="w-full h-full object-cover">
                     </div>
 
-                    <!-- Content Section -->
-                    <div class="w-2/3 p-6 mt-10">
-                        <div class="border border-gray-300 overflow-hidden bg-gray-200">
-                            <div class="grid grid-cols-3 gap-4 p-4 border-b border-gray-500">
-                                <div class="col-span-1 text-gray-600 font-medium">Kegiatan</div>
-                                <div class="col-span-2">{{ $report->report_name }}</div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 p-4 border-b border-gray-500">
-                                <div class="col-span-1 text-gray-600 font-medium">Tanggal</div>
-                                <div class="col-span-2">{{ \Carbon\Carbon::parse($report->upload_date)->translatedFormat('j F Y') }}</div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 p-4 border-b border-gray-500">
-                                <div class="col-span-1 text-gray-600 font-medium">Waktu</div>
-                                <div class="col-span-2">
-                                    {{ \Carbon\Carbon::parse($report->start_time)->format('H:i') }} WIB -
-                                    {{ \Carbon\Carbon::parse($report->end_time)->format('H:i') }} WIB
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 p-4 border-b border-gray-500">
-                                <div class="col-span-1 text-gray-600 font-medium">Persetujuan</div>
-                                <div class="col-span-2">
-                                    <span class="border-b border-gray-400 px-3 py-1 text-sm font-semibold rounded-full
-    @if ($report->status == 'approved') bg-green-100 text-green-600
-    @elseif ($report->status == 'rejected') bg-red-100 text-red-600
-    @else bg-yellow-100 text-yellow-600 @endif">
-                                        @if ($report->status == 'approved')
-                                        Disetujui
-                                        @elseif ($report->status == 'rejected')
-                                        Ditolak
-                                        @else
-                                        Proses
-                                        @endif
-                                    </span>
-
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 p-4">
-                                <div class="col-span-1 text-gray-600 font-medium">Uraian Kegiatan</div>
-                                <div class="col-span-2 text-gray-700">
-                                    {{ $report->description }}
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 p-4 border-t border-gray-500
-                                @if ($report->comment == '') hidden @endif">
-                                <div class="col-span-1 text-gray-600 font-medium">komentar</div>
-                                <div class="col-span-2 text-gray-700">
-                                    {{ $report->comment }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @if ($report->status !== 'approved' && $report->status !== 'rejected')
+                    <form action="{{ route('mentor.report.delete', $report->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-bold transition-all flex items-center justify-center space-x-1.5">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Hapus Logbook Ini</span>
+                        </button>
+                    </form>
+                    @endif
                 </div>
+
+                <!-- Logbook Details -->
+                <div class="lg:w-2/3 space-y-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900">{{ $report->report_name }}</h3>
+                            <p class="text-xs font-medium text-slate-500 mt-0.5">
+                                <i class="far fa-calendar mr-1"></i> {{ \Carbon\Carbon::parse($report->upload_date)->translatedFormat('j F Y') }} 
+                                <span class="mx-1.5">•</span> 
+                                <i class="far fa-clock mr-1"></i> {{ \Carbon\Carbon::parse($report->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($report->end_time)->format('H:i') }} WIB
+                            </p>
+                        </div>
+
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border shrink-0
+                            @if ($report->status == 'approved') bg-emerald-50 text-emerald-700 border-emerald-200
+                            @elseif ($report->status == 'rejected') bg-rose-50 text-rose-700 border-rose-200
+                            @else bg-amber-50 text-amber-700 border-amber-200 @endif">
+                            <i class="fas mr-1.5 text-[10px] 
+                                @if ($report->status == 'approved') fa-check-circle
+                                @elseif ($report->status == 'rejected') fa-times-circle
+                                @else fa-spinner fa-spin @endif"></i>
+                            {{ $report->status == 'approved' ? 'Disetujui' : ($report->status == 'rejected' ? 'Ditolak' : 'Menunggu Approval') }}
+                        </span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Uraian Pelaksanaan Mentoring</p>
+                        <p class="text-xs font-medium text-slate-700 leading-relaxed">{{ $report->description }}</p>
+                    </div>
+
+                    <!-- Evaluation Comment -->
+                    @if ($report->comment)
+                    <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-1">
+                        <p class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider flex items-center">
+                            <i class="fas fa-comment-dots mr-1.5"></i> Catatan Evaluasi Dosen/Pembimbing
+                        </p>
+                        <p class="text-xs font-semibold text-slate-800">{{ $report->comment }}</p>
+                    </div>
+                    @endif
+                </div>
+
             </div>
         </div>
-        @endforeach
+        @empty
+        <div class="p-12 text-center bg-white rounded-3xl border border-slate-200/80 shadow-sm">
+            <i class="fas fa-book-open text-4xl text-slate-300 mb-3"></i>
+            <p class="text-sm font-medium text-slate-500">Belum ada logbook kegiatan terdaftar. Klik tombol "+ Tambah Logbook Sesi" untuk menambahkan.</p>
+        </div>
+        @endforelse
     </div>
 </div>
 
+<!-- Modal Tambah Logbook -->
+<div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-plus text-base"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-900">Tambah Logbook Kegiatan</h3>
+                    <p class="text-xs text-slate-500">Dokumentasikan pelaksanaan kegiatan mentoring</p>
+                </div>
+            </div>
+            <button id="closeModalIcon" class="text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times text-base"></i>
+            </button>
+        </div>
 
-<!-- Modal -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg w-1/2 shadow-lg p-6 overflow-y-auto max-h-[90vh]">
-        <h2 class="text-xl font-bold mb-4">Tambahkan Kegiatan Mentoring</h2>
-
-        <form action="{{ route('logbook.add') }}" method="POST">
-            <!-- Nama Kegiatan -->
+        <form action="{{ route('logbook.add') }}" method="POST" class="space-y-4">
             @csrf
-            <div class="mb-4">
-                <label for="report_name" class="block text-sm font-medium mb-1">Nama Kegiatan</label>
-                <input type="text" id="report_name" name="report_name"
-                    class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500">
+            <div>
+                <label for="report_name" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nama / Judul Kegiatan</label>
+                <input type="text" id="report_name" name="report_name" required placeholder="Contoh: Sesi Mentoring 1 - Pemahaman Dasar..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
             </div>
 
-            <!-- Tanggal -->
-            <div class="mb-4">
-                <label for="upload_date" class="block text-sm font-medium mb-1">Tanggal</label>
-                <input type="date" id="upload_date" name="upload_date"
-                    class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500">
+            <div>
+                <label for="upload_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tanggal Kegiatan</label>
+                <input type="date" id="upload_date" name="upload_date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
             </div>
 
-            <!-- Waktu -->
-            <div class="mb-4">
-                <label for="waktu" class="block text-sm font-medium mb-1">Waktu</label>
-                <div class="flex items-center space-x-2">
-                    <input name="start_time" type="time" class="w-1/2 border rounded-lg p-2 focus:ring-2 focus:ring-blue-500">
-                    <span>s/d</span>
-                    <input name="end_time" type="time" class="w-1/2 border rounded-lg p-2 focus:ring-2 focus:ring-blue-500">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Waktu Sesi</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <input name="start_time" type="time" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+                    <input name="end_time" type="time" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
                 </div>
             </div>
 
-            <!-- Uraian Mentoring -->
-            <div class="mb-4">
-                <label for="uraian" class="block text-sm font-medium mb-1">Uraian Mentoring</label>
-                <textarea name="description" id="description" rows="4" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"></textarea>
+            <div>
+                <label for="description" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Uraian Pelaksanaan</label>
+                <textarea name="description" id="description" rows="3" required placeholder="Tuliskan jalannya kegiatan mentoring..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"></textarea>
             </div>
 
-            <!-- Media Kamera -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Media Kamera</label>
-                <button type="button" id="openCameraButton"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                    Buka Kamera
+            <!-- Media Kamera / Foto -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Dokumentasi Foto Sesi</label>
+                <button type="button" id="openCameraButton" class="w-full py-3 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition-all flex items-center justify-center space-x-2">
+                    <i class="fas fa-camera"></i>
+                    <span>Ambil Foto Dokumentasi Kamera</span>
                 </button>
-                <div id="cameraContainer" class="mt-4 hidden">
-                    <video autoplay></video>
+
+                <div id="cameraContainer" class="mt-4 hidden space-y-3 p-3 bg-slate-900 rounded-2xl text-center">
+                    <video autoplay class="w-full h-48 object-cover rounded-xl mx-auto"></video>
                     <canvas class="hidden"></canvas>
-                    <div class="controls">
-                        <button class="play">Play</button>
-                        <button class="pause hidden"></button>
-                        <button class="screenshot hidden bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-2" type="button">Foto</button>
+                    <div class="controls flex items-center justify-center space-x-2">
+                        <button type="button" class="screenshot px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md">
+                            <i class="fas fa-camera mr-1"></i> Ambil Foto
+                        </button>
                     </div>
                 </div>
+
+                <div class="screenshot-preview mt-4 hidden space-y-2 text-center">
+                    <img id="screenshotImage" alt="Screenshot" class="w-full h-48 object-cover rounded-2xl border border-slate-200">
+                    <button id="deleteScreenshotButton" type="button" class="px-4 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white font-bold text-xs rounded-xl transition-all">
+                        Hapus Foto
+                    </button>
+                    <input type="hidden" id="image" name="image">
+                </div>
             </div>
-            <!-- Screenshot Preview -->
-            <div class="screenshot-preview" style="display: none;">
-                <h3 class="text-sm font-medium mb-2">Gambar Foto</h3>
-                <img id="screenshotImage" alt="Screenshot" />
-                <button id="deleteScreenshotButton" type="button" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 mt-2">
-                    Hapus Foto
-                </button>
-                <input type="hidden" id="image" name="image">
-            </div>
-            <!-- Buttons -->
-            <div class="flex justify-end space-x-2">
-                <button type="button" id="closeModal"
-                    class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                <button type="button" id="closeModal" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all">
                     Batal
                 </button>
-                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                    Selesai
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-200 transition-all">
+                    Simpan Logbook
                 </button>
             </div>
         </form>
     </div>
 </div>
-</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modal');
+        const openModalBtn = document.getElementById('openModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const closeModalIcon = document.getElementById('closeModalIcon');
+
+        const closeModal = () => modal.classList.add('hidden');
+
+        if (openModalBtn) openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+        if (closeModalIcon) closeModalIcon.addEventListener('click', closeModal);
+    });
+</script>
 @endsection

@@ -20,6 +20,16 @@
 
             <!-- User Menu & Quick Actions -->
             <div class="flex items-center space-x-3">
+                <!-- Theme Toggle Button -->
+                <button 
+                    id="theme-toggle" 
+                    type="button" 
+                    title="Beralih Mode Gelap/Terang"
+                    class="p-2 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors focus:outline-none">
+                    <i id="theme-toggle-dark-icon" class="fas fa-moon text-sm hidden"></i>
+                    <i id="theme-toggle-light-icon" class="fas fa-sun text-sm hidden text-amber-400"></i>
+                </button>
+
                 <a href="/" class="hidden md:inline-flex items-center text-xs font-semibold text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
                     <i class="fas fa-globe mr-1.5"></i> Lihat Web Utama
                 </a>
