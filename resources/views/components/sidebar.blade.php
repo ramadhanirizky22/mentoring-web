@@ -1,125 +1,130 @@
-<nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-    <div class="px-3 py-3 lg:px-5 lg:pl-3">
+<!-- Top Fixed Navbar for Admin -->
+<nav class="fixed top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+    <div class="px-4 py-3 lg:px-6">
         <div class="flex items-center justify-between">
-            <div class="flex items-center justify-start rtl:justify-end">
-                <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar"
-                    type="button"
-                    class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
-                    <span class="sr-only">Open sidebar</span>
-                    <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path clip-rule="evenodd" fill-rule="evenodd"
-                            d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z">
-                        </path>
-                    </svg>
+            <div class="flex items-center space-x-3">
+                <button data-drawer-target="admin-sidebar" data-drawer-toggle="admin-sidebar" aria-controls="admin-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-slate-500 rounded-xl sm:hidden hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <span class="sr-only">Toggle Sidebar</span>
+                    <i class="fas fa-bars text-lg"></i>
                 </button>
-                <a href="{{ route('admin.dashboard') }}" class="flex ms-2 md:me-24">
-                    <img src="/images/ump.svg" class="h-10 me-3" alt="Logo" />
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 group">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-100 group-hover:scale-105 transition-transform">
+                        <i class="fas fa-user-shield text-sm"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-bold text-slate-900 text-base leading-tight tracking-tight">Admin <span class="text-indigo-600">Mentoring</span></span>
+                        <span class="text-[10px] font-medium text-slate-500 tracking-wider uppercase">Portal Management</span>
+                    </div>
                 </a>
             </div>
-            <div class="flex items-center">
-                <div class="flex items-center ms-3">
-                    <button type="button"
-                        class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                        aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="w-8 h-8 rounded-full"
-                            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png"
-                            alt="user photo" />
+
+            <!-- User Menu & Quick Actions -->
+            <div class="flex items-center space-x-3">
+                <a href="/" class="hidden md:inline-flex items-center text-xs font-semibold text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                    <i class="fas fa-globe mr-1.5"></i> Lihat Web Utama
+                </a>
+
+                @if(Auth::check())
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" @click.away="open = false" type="button" class="flex items-center space-x-2 p-1 rounded-full hover:bg-slate-100 transition-colors focus:outline-none">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                        </div>
+                        <span class="hidden sm:block text-xs font-semibold text-slate-700 max-w-[100px] truncate">{{ Auth::user()->name }}</span>
+                        <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
                     </button>
-                    <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
-                        id="dropdown-user">
-                        <ul class="py-1" role="none">
-                            <li>
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit"
-                                        class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
+                    <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-1 z-50 divide-y divide-slate-100" style="display: none;">
+                        <div class="px-4 py-2.5">
+                            <p class="text-xs font-bold text-slate-900 truncate">{{ Auth::user()->name }}</p>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-50 text-amber-700 uppercase mt-1">
+                                {{ session('role', Auth::user()->role) }}
+                            </span>
+                        </div>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 font-medium transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2 text-rose-500"></i> Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
 </nav>
 
-<aside id="logo-sidebar"
-    class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
-    aria-label="Sidebar">
-    <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
-        <ul class="space-y-2 font-medium">
+<!-- Admin Sidebar Off-Canvas Drawer -->
+<aside id="admin-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-16 transition-transform -translate-x-full bg-white border-r border-slate-200/80 sm:translate-x-0" aria-label="Sidebar">
+    <div class="h-full px-3 py-4 overflow-y-auto bg-white flex flex-col justify-between">
+        <ul class="space-y-1.5 font-medium text-sm">
+            <!-- Section Title -->
+            <li class="px-3 pt-2 pb-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                Menu Utama
+            </li>
+
+            <!-- Dashboard Link -->
             <li>
-                <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M13.5 2c-.178 0-.356.013-.492.022l-.074.005a1 1 0 0 0-.934.998V11a1 1 0 0 0 1 1h7.975a1 1 0 0 0 .998-.934l.005-.074A7.04 7.04 0 0 0 22 10.5 8.5 8.5 0 0 0 13.5 2Z" />
-                        <path d="M11 6.025a1 1 0 0 0-1.065-.998 8.5 8.5 0 1 0 9.038 9.039A1 1 0 0 0 17.975 13H11V6.025Z" />
-                    </svg>
-                    <span> Dashboard </span>
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-chart-pie w-6 text-center mr-2 opacity-70"></i>
+                    <span>Dashboard Admin</span>
                 </a>
             </li>
 
             @if(session('role') !== 'pembimbing')
+            <li class="px-3 pt-4 pb-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                Kelola Data
+            </li>
             <li>
-                <a href="{{ route('admin.announcement') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M13.5 2c-.178 0-.356.013-.492.022l-.074.005a1 1 0 0 0-.934.998V11a1 1 0 0 0 1 1h7.975a1 1 0 0 0 .998-.934l.005-.074A7.04 7.04 0 0 0 22 10.5 8.5 8.5 0 0 0 13.5 2Z" />
-                        <path d="M11 6.025a1 1 0 0 0-1.065-.998 8.5 8.5 0 1 0 9.038 9.039A1 1 0 0 0 17.975 13H11V6.025Z" />
-                    </svg>
-                    <span> Announcement </span>
+                <a href="{{ route('admin.announcement') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.announcement') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-bullhorn w-6 text-center mr-2 opacity-70"></i>
+                    <span>Pengumuman</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.pembimbing') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M16 17v2H2v-2s0-4 7-4s7 4 7 4m-3.5-9.5A3.5 3.5 0 1 0 9 11a3.5 3.5 0 0 0 3.5-3.5m3.44 5.5A5.32 5.32 0 0 1 18 17v2h4v-2s0-3.63-6.06-4M15 4a3.4 3.4 0 0 0-1.93.59a5 5 0 0 1 0 5.82A3.4 3.4 0 0 0 15 11a3.5 3.5 0 0 0 0-7" />
-                    </svg>
-                    <span> Data Pembina </span>
+                <a href="{{ route('admin.pembimbing') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.pembimbing') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-user-tie w-6 text-center mr-2 opacity-70"></i>
+                    <span>Data Pembina</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.mentor') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-6 8a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1Zm1 3a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9Z" clip-rule="evenodd" />
-                    </svg>
-                    <span> Data Mentor </span>
+                <a href="{{ route('admin.mentor') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.mentor') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-user-graduate w-6 text-center mr-2 opacity-70"></i>
+                    <span>Data Mentor</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.class') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-6 8a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1Zm1 3a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9Z" clip-rule="evenodd" />
-                    </svg>
-                    <span> Data Kelompok </span>
+                <a href="{{ route('admin.class') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.class') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-users-rectangle w-6 text-center mr-2 opacity-70"></i>
+                    <span>Data Kelompok</span>
                 </a>
             </li>
             @endif
 
+            <li class="px-3 pt-4 pb-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                Laporan & Absensi
+            </li>
             <li>
-                <a href="{{ route('admin.attendance') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M13 11.15V4a1 1 0 1 0-2 0v7.15L8.78 8.374a1 1 0 1 0-1.56 1.25l4 5a1 1 0 0 0 1.56 0l4-5a1 1 0 1 0-1.56-1.25L13 11.15Z" clip-rule="evenodd" />
-                        <path fill-rule="evenodd" d="M9.657 15.874 7.358 13H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.358l-2.3 2.874a3 3 0 0 1-4.685 0ZM17 16a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" clip-rule="evenodd" />
-                    </svg>
-                    <span> Kehadiran </span>
+                <a href="{{ route('admin.attendance') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.attendance*') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-calendar-check w-6 text-center mr-2 opacity-70"></i>
+                    <span>Kehadiran</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.report') }}"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M7.5 4.586A2 2 0 0 1 8.914 4h6.172a2 2 0 0 1 1.414.586L17.914 6H19a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1.086L7.5 4.586ZM10 12a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm2-4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" clip-rule="evenodd" />
-                    </svg>
-                    <span> Laporan </span>
+                <a href="{{ route('admin.report') }}" class="flex items-center px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.report*') ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-file-invoice w-6 text-center mr-2 opacity-70"></i>
+                    <span>Laporan Logbook</span>
                 </a>
             </li>
         </ul>
+
+        <!-- Bottom Sidebar Info -->
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 mt-6">
+            <div class="flex items-center space-x-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xs font-semibold text-slate-700">Sistem Aktif</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">Laravel Mentoring v11.x</p>
+        </div>
     </div>
 </aside>

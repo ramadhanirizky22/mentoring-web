@@ -1,186 +1,120 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto p-4">
-        <!-- Heading -->
-        <div class="p-6 mb-6">
-            <h1 class="text-2xl font-bold">Hi {{ Auth::user()->name }} 👋</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-4">
+    
+    <!-- Welcome Header -->
+    <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Halo, {{ Auth::user()->name }} 👋</h1>
+            <p class="text-xs sm:text-sm text-indigo-100">Selamat datang di Dashboard Mentoring. Cek jadwal agenda & deadline tugas Anda minggu ini.</p>
+        </div>
+        <div class="shrink-0">
+            <a href="{{ route('mycourse') }}" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs backdrop-blur-md border border-white/20 transition-all">
+                <i class="fas fa-book-open mr-2"></i> Mentoring Saya
+            </a>
+        </div>
+    </div>
+
+    <!-- Timeline & Upcoming Deadline Section -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                <i class="fas fa-clock text-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">Agenda & Deadline Mendatang</h2>
+                <p class="text-xs text-slate-500">Aktivitas presensi & tugas dalam 7 hari ke depan</p>
+            </div>
         </div>
 
-        <!-- Timeline Section -->
-        <div class="bg-white shadow rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Timeline</h2>
-            <div id="timeline-content"
-                class="flex justify-center items-center h-40 bg-white rounded-lg outline outline-2 outline-gray-200">
-                @if (count($events) > 0)
-                    <ul class="w-full p-4">
+        @if (count($events) > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach ($events as $event)
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 hover:border-indigo-200 transition-all flex items-start space-x-3.5">
+                <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h4 class="text-sm font-bold text-slate-900 truncate">{{ $event['title'] }}</h4>
+                    <p class="text-xs font-semibold text-indigo-600 mt-1">
+                        <i class="far text-[11px] fa-clock mr-1"></i>
+                        {{ \Carbon\Carbon::parse($event['start'])->format('d M Y, H:i') }}
+                    </p>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <i class="fas fa-calendar-check text-4xl text-slate-300 mb-2"></i>
+            <p class="text-sm font-medium text-slate-500">Tidak ada tenggat tugas atau agenda presensi minggu ini.</p>
+        </div>
+        @endif
+    </div>
+
+    <!-- Responsive Calendar Container -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600">
+                    <i class="fas fa-calendar-alt text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Kalender Kegiatan</h2>
+                    <p class="text-xs text-slate-500">Jadwal interaktif aktivitas mentoring</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar Agenda (1 col on desktop) -->
+            <div class="lg:col-span-1 space-y-6 bg-slate-50/80 p-5 rounded-2xl border border-slate-100">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center">
+                        <i class="fas fa-list-ul text-indigo-600 mr-2"></i> Daftar Agenda
+                    </h3>
+                    @if (count($events) > 0)
+                    <ul class="space-y-2.5">
                         @foreach ($events as $event)
-                            <li class="text-gray-700 mb-2">
-                                <span class="font-semibold">{{ $event['title'] }}</span>
-                                <span class="ml-2 text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($event['start'])->format('d M Y, H:i') }}
-                                </span>
-                            </li>
+                        <li class="p-3 bg-white rounded-xl border border-slate-200/60 shadow-sm">
+                            <p class="text-xs font-bold text-slate-800 line-clamp-1">{{ $event['title'] }}</p>
+                            <p class="text-[10px] font-semibold text-slate-400 mt-1">
+                                {{ \Carbon\Carbon::parse($event['start'])->format('d M, H:i') }}
+                            </p>
+                        </li>
                         @endforeach
                     </ul>
-                @else
-                    <div class="text-center">
-                        <img src="/images/timeline.svg" alt="No Activities" class="w-16 h-16 mx-auto">
-                        <p class="text-gray-500 mt-2">No activities require action</p>
-                    </div>
-                @endif
-            </div>
-
-            <h2 class="text-xl font-semibold mb-4 mt-4">Calendar</h2>
-            <div class="grid grid-cols-4 gap-4 p-4 bg-white rounded-lg shadow-md outline outline-2 outline-gray-200">
-                <!-- Sidebar Agenda -->
-                <div class="col-span-1 p-4 bg-white">
-                    <!-- Mini Calendar -->
-                    <div id="mini-calendar" class="mb-4"></div>
-
-                    <!-- Agenda & Tugas -->
-                    <div class="flex items-center mb-4">
-                        <img src="/images/agenda.png" alt="Agenda & Tugas" class="w-8 h-8 mr-4">
-                        <h3 class="text-lg font-bold">Agenda & Tugas</h3>
-                    </div>
-                    @if (count($events) > 0)
-                        <ul id="agenda-list">
-                            <!-- Agenda items will be dynamically added here -->
-                            @foreach ($events as $event)
-                                <li class="text-gray-700 mb-2">
-                                    <span class="font-semibold">{{ $event['title'] }}</span>
-                                    <span class="ml-2 text-sm text-gray-500">
-                                        {{ \Carbon\Carbon::parse($event['start'])->format('d M Y, H:i') }}
-                                    </span>
-                                </li>
-                            @endforeach
-                        </ul>
                     @else
-                        <div class="text-center">
-                            
-                            <p class="text-gray-500 mt-2">No activities require action</p>
-                        </div>
+                    <p class="text-xs text-slate-400 font-medium">Belum ada agenda terdaftar.</p>
                     @endif
                 </div>
+            </div>
 
-                <!-- Kalender Utama -->
-                <div class="col-span-3">
-                    <div class="flex justify-between items-center p-4 bg-gray-800 text-white rounded-lg mb-4">
-                        <span class="text-lg font-semibold">Calender</span>
-                    </div>
-                    <div id="main-calendar"></div>
-                </div>
+            <!-- Main Calendar View (3 cols on desktop) -->
+            <div class="lg:col-span-3">
+                <div id="main-calendar" class="min-h-[450px]"></div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal Pop-up -->
-    <div id="modal-tambah-event" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-            <h3 class="text-xl font-bold mb-4">Tambah Event</h3>
-            <form id="form-tambah-event">
-                <div class="mb-4">
-                    <label for="event-title" class="block text-gray-700 font-semibold">Judul Event</label>
-                    <input id="event-title" type="text" class="w-full border rounded-lg p-2">
-                </div>
-                <div class="mb-4">
-                    <label for="event-start" class="block text-gray-700 font-semibold">Tanggal Mulai</label>
-                    <input id="event-start" type="datetime-local" class="w-full border rounded-lg p-2">
-                </div>
-                <div class="mb-4">
-                    <label for="event-end" class="block text-gray-700 font-semibold">Tanggal Selesai</label>
-                    <input id="event-end" type="datetime-local" class="w-full border rounded-lg p-2">
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" id="btn-close-modal"
-                        class="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2">Batal</button>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Mini Calendar
-            const miniCalendarEl = document.getElementById("mini-calendar");
-            const miniCalendar = new FullCalendar.Calendar(miniCalendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: false,
-                fixedWeekCount: false,
-                dayMaxEvents: false,
-                height: 'auto',
-                events: [{
-                    title: 'Daily Standup',
-                    start: '2024-01-02'
-                }, ],
-            });
-            miniCalendar.render();
-
-            // Kalender Utama
-            const mainCalendarEl = document.getElementById("main-calendar");
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const mainCalendarEl = document.getElementById("main-calendar");
+        if (mainCalendarEl) {
             const mainCalendar = new FullCalendar.Calendar(mainCalendarEl, {
-                initialView: 'dayGridMonth',
+                initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek'
                 },
-                editable: true,
-                events: @json($events), // Ambil data events dari controller
+                editable: false,
+                events: @json($events),
             });
-
             mainCalendar.render();
-
-            // Elemen untuk modal dan agenda
-            const btnTambahEvent = document.getElementById("btn-tambah-event");
-            const modalTambahEvent = document.getElementById("modal-tambah-event");
-            const btnCloseModal = document.getElementById("btn-close-modal");
-            const formTambahEvent = document.getElementById("form-tambah-event");
-            const agendaList = document.getElementById("agenda-list");
-
-            // Tampilkan modal saat tombol "Tambah Event" ditekan
-            btnTambahEvent.addEventListener("click", () => {
-                modalTambahEvent.classList.remove("hidden");
-            });
-
-            // Sembunyikan modal saat tombol "Batal" ditekan
-            btnCloseModal.addEventListener("click", () => {
-                modalTambahEvent.classList.add("hidden");
-            });
-
-            // Tambahkan event baru ke kalender dan agenda saat form disubmit
-            formTambahEvent.addEventListener("submit", (e) => {
-                e.preventDefault(); // Cegah reload halaman
-
-                // Ambil data dari input
-                const title = document.getElementById("event-title").value;
-                const start = document.getElementById("event-start").value;
-
-                if (!title || !start) {
-                    alert("Judul dan tanggal mulai harus diisi!");
-                    return;
-                }
-
-                // Tambahkan event ke kalender utama
-                mainCalendar.addEvent({
-                    title: title,
-                    start: start,
-                });
-
-                // Tambahkan event ke daftar agenda
-                const startDate = new Date(start).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                const newAgendaItem =
-                    `<li class="text-blue-500">● ${title} <span class="float-right">${startDate}</span></li>`;
-                agendaList.insertAdjacentHTML('beforeend', newAgendaItem);
-
-                // Reset form dan sembunyikan modal
-                formTambahEvent.reset();
-                modalTambahEvent.classList.add("hidden");
-            });
-        });
-    </script>
+        }
+    });
+</script>
 @endsection

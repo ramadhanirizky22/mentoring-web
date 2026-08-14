@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up()
     {
-        DB::statement("ALTER TABLE users MODIFY role ENUM('mente', 'mentor', 'petugas', 'pembimbing') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY role ENUM('mente', 'mentor', 'petugas', 'pembimbing') NOT NULL");
+        }
 
         Schema::table('courses', function (Blueprint $table) {
             $table->unsignedBigInteger('pembimbing_id')->nullable()->after('mentor_id');
@@ -19,7 +21,9 @@ return new class extends Migration {
 
     public function down()
     {
-        DB::statement("ALTER TABLE users MODIFY role ENUM('mente', 'mentor', 'petugas') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY role ENUM('mente', 'mentor', 'petugas') NOT NULL");
+        }
 
         Schema::table('courses', function (Blueprint $table) {
             $table->dropForeign(['pembimbing_id']);

@@ -1,184 +1,207 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard')
+@section('title', 'Kelola Pembina & Dosen')
 
 @section('content')
-<div class="flex  bg-gray-200">
-    <!-- Sidebar -->
-    @include('components.sidebar')
+<div class="space-y-8" x-data="mentorManager()">
+    
+    <!-- Header Banner -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-indigo-900 via-indigo-800 to-violet-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100">
+        <div class="space-y-1">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 uppercase">
+                <i class="fas fa-chalkboard-teacher mr-1 text-[9px]"></i> Pembimbing & Dosen
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Kelola Data Pembina / Dosen</h1>
+            <p class="text-xs text-indigo-200">Kelola akun dan tetapkan peran pembimbing mentoring</p>
+        </div>
 
-    <!-- Data Content -->
-    <div class="w-2/3 p-4 justify-between items-center container mx-auto">
-        <div x-data="mentorManager()">
-            <!-- Table -->
-            <div class="bg-white shadow-md rounded-md p-4">
-                <!-- Judul -->
-                <h2 class="text-xl font-bold mb-4">Kelola Pembina</h2>
+        <div class="shrink-0">
+            <button 
+                @click="showAddMentor = true; newMentor = { name: '', nim: '', role: 'pembimbing' };"
+                class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-white text-indigo-900 hover:bg-indigo-50 font-bold text-xs shadow-lg shadow-black/10 transition-all hover:scale-105 active:scale-95">
+                <i class="fas fa-plus mr-2 text-indigo-600"></i> Tambah Pembina Baru
+            </button>
+        </div>
+    </div>
 
-                <!-- Tombol Tambah dan Pencarian -->
-                <div class="flex justify-between items-center mb-4">
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-                        @click="showAddMentor = true; newMentor = { name: '', nim: '', role: '' };"><svg
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                        Tambah
-                    </button>
-                    <div class="relative">
-                        <form method="GET" action="{{ route('admin.pembimbing') }}" class="relative">
-                            <input type="text" name="search" placeholder="Cari pembina..." aria-label="Search"
-                                value="{{ $search ?? '' }}"
-                                class="border rounded-md px-3 py-2 pl-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5 absolute top-2.5 left-3 text-gray-500">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21 21l-4.35-4.35m1.35-6.15a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
-                            </svg>
-                        </form>
-                    </div>
-                </div>
+    <!-- Alert Messages -->
+    @if (session('success'))
+    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-start space-x-3 text-emerald-800 text-xs font-semibold">
+        <i class="fas fa-check-circle text-emerald-500 text-base mt-0.5 shrink-0"></i>
+        <span>{{ session('success') }}</span>
+    </div>
+    @endif
 
-                <!-- Modal Tambah Mentor -->
-                <div x-show="showAddMentor"
-                    class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style="display: none;"
-                    x-transition>
-                    <div class="bg-white p-6 rounded shadow-md w-1/3">
-                        <h2 class="text-lg font-semibold mb-4">Tambah Pembina</h2>
-                        <form method="POST" action="{{ route('admin.addPembimbing') }}">
-                            @csrf
-                            <div class="mb-4">
-                                <label for="mentor_nim" class="block text-sm font-medium text-gray-700">NIK|NIP
-                                    Pembina</label>
-                                <input type="text" id="mentor_nim" name="nim" x-model="newMentor.nim"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Masukkan NIK|NIP Pembina" />
-                            </div>
-                            <div class="flex justify-end">
-                                <button type="button" class="bg-gray-300 text-black px-4 py-2 rounded mr-2"
-                                    @click="showAddMentor = false">
-                                    Batal
-                                </button>
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
-                                    Simpan
-                                </button>
-                            </div>
-                        </form>
+    @if ($errors->any())
+    <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200/80 space-y-1 text-rose-800 text-xs font-semibold">
+        <div class="flex items-center space-x-2">
+            <i class="fas fa-exclamation-triangle text-rose-500 text-base shrink-0"></i>
+            <span>Terdapat beberapa kesalahan:</span>
+        </div>
+        <ul class="list-disc list-inside pl-6 space-y-0.5">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
 
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
-                        role="alert">
-                        {{ session('success') }}
-                    </div>
-                    @endif
-
-                    @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-                        role="alert">
-                        @foreach ($errors->all() as $error)
-                        <p>{{ $error }}</p>
-                        @endforeach
-                    </div>
-                    @endif
-                </div>
-
-                <!-- Tabel -->
-                <table class="w-full table-auto">
-                    <thead>
-                        <tr class="bg-gray-100">
-                            <th class="text-left p-2">Nama</th>
-                            <th class="text-left p-2">NIK|NIP</th>
-                            <th class="text-left p-2">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($pembimbings as $pembimbing)
-                        <tr>
-                            <td class="p-2">{{ $pembimbing->name }}</td>
-                            <td class="p-2">{{ $pembimbing->nim }}</td>
-                            <td class="p-2">
-                                <button class="bg-red-500 text-white px-4 py-2 rounded"
-                                    @click="deleteMentor({{ $pembimbing->nim }})">
-                                    Hapus
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <!-- Data Table Container -->
+    <div class="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">Daftar Pembina Terdaftar</h2>
+                <p class="text-xs text-slate-500">Total {{ count($pembimbings) }} pembina aktif</p>
             </div>
+
+            <!-- Search Form -->
+            <form method="GET" action="{{ route('admin.pembimbing') }}" class="relative min-w-[260px]">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <i class="fas fa-search text-xs"></i>
+                </div>
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Cari nama / NIK / NIP..." 
+                    value="{{ $search ?? '' }}"
+                    class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+            </form>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-100">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold uppercase text-slate-400 tracking-wider">
+                        <th class="p-4">Nama Lengkap</th>
+                        <th class="p-4">NIK / NIP / Kode Dosen</th>
+                        <th class="p-4">Peran System</th>
+                        <th class="p-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    @forelse ($pembimbings as $pembimbing)
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="p-4 font-bold text-slate-900">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                    {{ strtoupper(substr($pembimbing->name, 0, 2)) }}
+                                </div>
+                                <div>
+                                    <span class="block text-sm font-bold text-slate-900">{{ $pembimbing->name }}</span>
+                                    <span class="text-[11px] font-normal text-slate-400">{{ $pembimbing->email ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <span class="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                {{ $pembimbing->nim }}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                <i class="fas fa-graduation-cap mr-1 text-[10px]"></i> Pembimbing
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <button 
+                                @click="deleteMentor({{ $pembimbing->nim }})"
+                                class="inline-flex items-center px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white font-bold text-xs transition-colors">
+                                <i class="fas fa-trash-alt mr-1 text-[11px]"></i> Hapus Pembina
+                            </button>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-slate-400 text-sm font-medium">
+                            <i class="fas fa-user-slash text-3xl text-slate-300 mb-2 block"></i>
+                            Belum ada data pembina terdaftar.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Pembimbing -->
+    <div 
+        x-show="showAddMentor" 
+        x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-6 relative" @click.away="showAddMentor = false">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                        <i class="fas fa-plus text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900">Tambah Pembina</h3>
+                        <p class="text-xs text-slate-500">Tetapkan pengguna sebagai pembimbing/dosen</p>
+                    </div>
+                </div>
+                <button @click="showAddMentor = false" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('admin.addPembimbing') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="mentor_nim" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">NIK / NIP Pembina SIA</label>
+                    <input 
+                        type="text" 
+                        id="mentor_nim" 
+                        name="nim" 
+                        x-model="newMentor.nim"
+                        required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+                        placeholder="Masukkan NIK atau NIP pembina..." />
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                    <button 
+                        type="button" 
+                        @click="showAddMentor = false"
+                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all">
+                        Batal
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-200 transition-all">
+                        Simpan Pembina
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
 <script>
     function mentorManager() {
         return {
             showAddMentor: false,
-            showEditMentor: false,
-            newMentor: {
-                name: '',
-                nim: '',
-                role: ''
-            },
-            editMentor: {
-                id: null,
-                name: '',
-                nim: '',
-                role: ''
-            },
-            suggestions: [],
-
-            fetchSuggestions(query) {
-                if (query.length < 1) {
-                    this.suggestions = [];
-                    return;
-                }
-
-                fetch(`/mentor?query=${query}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        this.suggestions = data;
-                    });
-            },
-
-            selectSuggestion(suggestion) {
-                this.newMentor.name = suggestion.name;
-                this.newMentor.nim = suggestion.nim;
-                this.suggestions = [];
-            },
-
-            addMentor() {
-                console.log('Data baru:', this.newMentor);
-                this.showAddMentor = false;
-                Swal.fire('Berhasil!', 'Mentor berhasil ditambahkan.', 'success');
-            },
-
-            updateMentor() {
-                console.log('Data diperbarui:', this.editMentor);
-                this.showEditMentor = false;
-                Swal.fire('Berhasil!', 'Mentor berhasil diperbarui.', 'success');
-            },
+            newMentor: { name: '', nim: '', role: 'pembimbing' },
 
             deleteMentor(nim) {
                 Swal.fire({
-                    title: 'Yakin ingin menghapus?',
-                    text: 'Data akan dihapus secara permanen!',
+                    title: 'Yakin ingin menghapus pembina?',
+                    text: 'Peran pengguna akan dihapus dari pembina.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: '#4f46e5',
+                    cancelButtonColor: '#e11d48',
                     confirmButtonText: 'Ya, hapus!',
                     cancelButtonText: 'Batal',
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axios
-                            .post('/admin/pembimbing/destroy', {
-                                nim: nim,
-                            })
+                        axios.post('/admin/pembimbing/destroy', { nim: nim })
                             .then((response) => {
                                 if (response.data.status === 'success') {
                                     Swal.fire({
@@ -203,31 +226,6 @@
                     }
                 });
             }
-
-
-        };
-    }
-
-    function mentorForm() {
-        return {
-            showAddMentor: false,
-            newMentor: {
-                name: '',
-                nim: '',
-                role: '',
-            },
-            suggestions: [],
-
-            fetchSuggestions(name) {
-                // Logika untuk mengambil saran mentor berdasarkan nama (opsional)
-                this.suggestions = []; // Reset suggestions (implement API jika ada)
-            },
-
-            selectSuggestion(suggestion) {
-                this.newMentor.name = suggestion.name;
-                this.newMentor.nim = suggestion.nim;
-                this.suggestions = [];
-            },
         };
     }
 </script>
